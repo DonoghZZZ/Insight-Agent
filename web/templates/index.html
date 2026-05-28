@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight Agent - AI 数据分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="gradient-bg min-h-screen text-gray-800" x-data="app()" x-init="init()">
+    <!-- 顶部导航 -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">I</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900">Insight Agent</h1>
+                    <p class="text-xs text-gray-500">AI 数据分析智能体</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button @click="currentView='home'" :class="currentView==='home' ? 'bg-cyan-100 text-cyan-700' : 'text-gray-600 hover:bg-gray-100'" 
+                        class="px-4 py-2 rounded-lg transition">🏠 首页</button>
+                <button @click="currentView='crawl'" :class="currentView==='crawl' ? 'bg-cyan-100 text-cyan-700' : 'text-gray-600 hover:bg-gray-100'" 
+                        class="px-4 py-2 rounded-lg transition">🕷️ 爬虫</button>
+                <button @click="currentView='analysis'" :class="currentView==='analysis' ? 'bg-cyan-100 text-cyan-700' : 'text-gray-600 hover:bg-gray-100'" 
+                        class="px-4 py-2 rounded-lg transition">📊 分析</button>
+                <button @click="currentView='chat'" :class="currentView==='chat' ? 'bg-cyan-100 text-cyan-700' : 'text-gray-600 hover:bg-gray-100'" 
+                        class="px-4 py-2 rounded-lg transition">💬 AI 对话</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 首页 -->
+        <div x-show="currentView==='home'" x-cloak>
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-white mb-4">Insight Agent</h2>
+                <p class="text-xl text-cyan-200">智能数据分析爬虫智能体</p>
+                <p class="text-gray-400 mt-2">Crawl · Analyze · Visualize · Chat — Powered by DeepSeek</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card glass rounded-xl p-6 cursor-pointer" @click="currentView='crawl'">
+                    <div class="w-14 h-14 rounded-lg bg-cyan-100 flex items-center justify-center mb-4">
+                        <span class="text-3xl">🕷️</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">数据采集</h3>
+                    <p class="text-gray-600 text-sm">8大平台爬虫，一句话启动</p>
+                </div>
+
+                <div class="card glass rounded-xl p-6 cursor-pointer" @click="currentView='analysis'">
+                    <div class="w-14 h-14 rounded-lg bg-green-100 flex items-center justify-center mb-4">
+                        <span class="text-3xl">📊</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">智能分析</h3>
+                    <p class="text-gray-600 text-sm">7种分析模型，并行执行</p>
+                </div>
+
+                <div class="card glass rounded-xl p-6 cursor-pointer" @click="showReport()">
+                    <div class="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center mb-4">
+                        <span class="text-3xl">📄</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">可视化报告</h3>
+                    <p class="text-gray-600 text-sm">HTML/PDF，一键导出</p>
+                </div>
+
+                <div class="card glass rounded-xl p-6 cursor-pointer" @click="currentView='chat'">
+                    <div class="w-14 h-14 rounded-lg bg-orange-100 flex items-center justify-center mb-4">
+                        <span class="text-3xl">💬</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">AI 问答</h3>
+                    <p class="text-gray-600 text-sm">持续对话，深度挖掘</p>
+                </div>
+            </div>
+
+            <!-- 最近会话 -->
+            <div class="mt-12 glass rounded-xl p-6">
+                <h3 class="font-bold text-lg mb-4">📋 最近会话</h3>
+                <div x-show="sessions.length > 0">
+                    <template x-for="s in sessions" :key="s.id">
+                        <div class="flex items-center justify-between py-3 border-b last:border-0">
+                            <div>
+                                <span class="font-medium" x-text="s.file"></span>
+                                <span class="text-sm text-gray-500 ml-2" x-text="s.messages + '条消息'"></span>
+                            </div>
+                            <button @click="resumeSession(s.id)" class="text-cyan-600 hover:text-cyan-700 text-sm">继续 →</button>
+                        </div>
+                    </template>
+                </div>
+                <p x-show="sessions.length === 0" class="text-gray-500 text-center py-4">暂无历史会话</p>
+            </div>
+        </div>
+
+        <!-- 爬虫页面 -->
+        <div x-show="currentView==='crawl'" x-cloak>
+            <div class="glass rounded-xl p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-6">🕷️ 数据采集</h2>
+                
+                <!-- 自然语言模式 -->
+                <div class="mb-8">
+                    <h3 class="font-semibold mb-4 text-cyan-700">💬 自然语言描述</h3>
+                    <div class="flex space-x-3">
+                        <input type="text" x-model="nlQuery" placeholder="例如：爬知乎上关于人工智能的回答，要100条" 
+                               class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                        <button @click="nlCrawl()" :disabled="loading" 
+                                class="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50">
+                            <span x-show="!loading">AI 解析</span>
+                            <span x-show="loading" class="thinking">处理中</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 手动选择 -->
+                <h3 class="font-semibold mb-4 text-cyan-700">🔧 手动选择平台</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <template x-for="c in crawlers" :key="c.key">
+                        <div @click="selectCrawler(c)" 
+                             :class="selectedCrawler?.key === c.key ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'hover:bg-gray-50'"
+                             class="border rounded-lg p-4 cursor-pointer transition">
+                            <div class="font-medium" x-text="c.platform"></div>
+                            <div class="text-sm text-gray-500 mt-1" x-text="c.name"></div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- 参数配置 -->
+                <div x-show="selectedCrawler" x-cloak class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium mb-3">⚙️ 参数配置</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">URL / ID</label>
+                            <input type="text" x-model="crawlParams.url" class="w-full px-3 py-2 border rounded-lg" placeholder="输入URL或ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">最大数量</label>
+                            <input type="number" x-model="crawlParams.max" class="w-full px-3 py-2 border rounded-lg" placeholder="100">
+                        </div>
+                        <button @click="startCrawl()" :disabled="loading" 
+                                class="w-full py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50">
+                            <span x-show="!loading">🚀 开始采集</span>
+                            <span x-show="loading" class="thinking">采集中</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 上传文件 -->
+            <div class="glass rounded-xl p-6">
+                <h3 class="font-semibold mb-4">📁 上传数据文件</h3>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <input type="file" id="fileInput" accept=".xlsx,.csv,.json" @change="uploadFile($event)" class="hidden">
+                    <label for="fileInput" class="cursor-pointer">
+                        <div class="text-4xl mb-2">📂</div>
+                        <p class="text-gray-600">点击或拖拽文件到这里</p>
+                        <p class="text-sm text-gray-400 mt-1">支持 .xlsx, .csv, .json</p>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分析页面 -->
+        <div x-show="currentView==='analysis'" x-cloak>
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-2xl font-bold mb-6">📊 数据分析</h2>
+                
+                <!-- 选择数据文件 -->
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-3">选择数据文件</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="f in files" :key="f.path">
+                            <div @click="selectedFile = f" 
+                                 :class="selectedFile?.path === f.path ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'hover:bg-gray-50'"
+                                 class="border rounded-lg p-3 cursor-pointer flex items-center space-x-3">
+                                <span class="text-2xl">📄</span>
+                                <div>
+                                    <div class="font-medium" x-text="f.name"></div>
+                                    <div class="text-sm text-gray-500" x-text="f.time"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 分析模板 -->
+                <div x-show="selectedFile" x-cloak>
+                    <h3 class="font-semibold mb-3">选择分析模板</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="t in templates" :key="t.id">
+                            <div @click="runTemplate(t)" 
+                                 class="border rounded-lg p-4 cursor-pointer hover:bg-cyan-50 transition">
+                                <div class="font-medium" x-text="t.name"></div>
+                                <div class="text-sm text-gray-500 mt-1" x-text="t.desc"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 结果显示 -->
+                <div x-show="analysisResult" x-cloak class="mt-6">
+                    <h3 class="font-semibold mb-3">📈 分析结果</h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <pre class="whitespace-pre-wrap text-sm" x-text="analysisResult"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 对话页面 -->
+        <div x-show="currentView==='chat'" x-cloak>
+            <div class="glass rounded-xl p-6 h-[calc(100vh-200px)] flex flex-col">
+                <h2 class="text-2xl font-bold mb-4">💬 AI 数据分析师</h2>
+                
+                <!-- 会话列表 -->
+                <div x-show="!currentSession" class="flex-1">
+                    <div class="mb-4">
+                        <button @click="createSession()" class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700">
+                            ➕ 新建会话
+                        </button>
+                    </div>
+                    <div class="space-y-2">
+                        <template x-for="s in sessions" :key="s.id">
+                            <div @click="resumeSession(s.id)" class="border rounded-lg p-3 cursor-pointer hover:bg-gray-50">
+                                <span x-text="s.file"></span>
+                                <span class="text-sm text-gray-500 ml-2" x-text="s.messages + '条消息'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 聊天界面 -->
+                <div x-show="currentSession" x-cloak class="flex-1 flex flex-col">
+                    <div class="flex-1 overflow-y-auto mb-4 space-y-4" id="chatContainer">
+                        <template x-for="(msg, i) in chatMessages" :key="i">
+                            <div :class="msg.role === 'user' ? 'text-right' : 'text-left'">
+                                <div :class="msg.role === 'user' ? 'bg-cyan-600 text-white' : 'bg-gray-100'"
+                                     class="inline-block max-w-[80%] px-4 py-2 rounded-lg text-left" x-html="renderMarkdown(msg.content)"></div>
+                            </div>
+                        </template>
+                        <div x-show="chatLoading" class="text-left">
+                            <div class="bg-gray-100 inline-block px-4 py-2 rounded-lg thinking">AI 思考中</div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <input type="text" x-model="chatInput" @keyup.enter="sendMessage()" 
+                               placeholder="输入分析需求..." class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        <button @click="sendMessage()" :disabled="chatLoading" 
+                                class="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50">
+                            发送
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

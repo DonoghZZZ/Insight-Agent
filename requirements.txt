@@ -1,0 +1,41 @@
+# Insight Agent - 完整依赖
+# Insight Agent数据分析爬虫智能体 — 独立可分发的完整项目
+
+# === 核心CLI ===
+prompt_toolkit>=3.0.0
+rich>=13.0.0
+
+# === LLM接口 ===
+openai>=1.0.0
+
+# === Agent 内核依赖 ===
+python-dotenv>=1.0.0
+fire>=0.5.0
+httpx>=0.27.0
+tenacity>=8.0.0
+pyyaml>=6.0.0
+ruamel.yaml>=0.18.0
+requests>=2.28.0
+jinja2>=3.1.0
+pydantic>=2.0.0
+croniter>=2.0.0
+PyJWT>=2.0.0
+
+# === 爬虫依赖 ===
+playwright>=1.40.0
+beautifulsoup4>=4.11.0
+openpyxl>=3.0.0
+selenium>=4.8.0
+webdriver-manager>=3.8.0
+pandas>=1.4.0
+
+# === 数据分析 ===
+jieba>=0.42.0
+snownlp>=0.12.0
+pyfiglet>=1.0.0
+
+# === Web UI ===
+flask>=3.0.0
+
+# === 性能监控（可选）===
+psutil>=5.9.0

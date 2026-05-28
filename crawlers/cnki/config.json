@@ -1,0 +1,54 @@
+{
+    "name": "cnki-spider",
+    "version": "1.0.0",
+    "description": "知网(CNKI)学术文献爬虫工具 - Python",
+    "main": "main.py",
+    "scripts": {
+        "start": "python main.py",
+        "check": "python main.py check",
+        "search": "python main.py search",
+        "test": "python -m pytest tests/"
+    },
+    "keywords": [
+        "cnki",
+        "spider",
+        "crawler",
+        "academic",
+        "paper",
+        "scholar"
+    ],
+    "author": "CNKI Spider Team",
+    "license": "MIT",
+    "requires": [
+        "python>=3.8"
+    ],
+    "dependencies": [
+        "requests>=2.28.0",
+        "beautifulsoup4>=4.11.0",
+        "lxml>=4.9.0",
+        "selenium>=4.8.0",
+        "webdriver-manager>=3.8.0"
+    ],
+    "optional_dependencies": {
+        "excel": [
+            "openpyxl>=3.0.0",
+            "pandas>=1.4.0"
+        ]
+    },
+    "platforms": [
+        "Windows",
+        "macOS",
+        "Linux"
+    ],
+    "readme": {
+        "language": "zh-CN",
+        "features": [
+            "支持关键词搜索",
+            "支持多种文献类型筛选",
+            "支持结果排序",
+            "支持CSV/JSON/Excel导出",
+            "内置请求限速和重试机制",
+            "支持代理池配置"
+        ]
+    }
+}

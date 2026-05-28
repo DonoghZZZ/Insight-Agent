@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Insight Agent 主服务
+  insight-agent:
+    build: .
+    container_name: insight-agent
+    ports:
+      - "9527:9527"
+    volumes:
+      - ./output:/app/output
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - insight-network
+
+  # Redis 缓存（可选）
+  redis:
+    image: redis:7-alpine
+    container_name: insight-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - insight-network
+    profiles:
+      - with-redis
+
+networks:
+  insight-network:
+    driver: bridge
+
+volumes:
+  redis-data:
